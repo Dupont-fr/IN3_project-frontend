@@ -48,8 +48,8 @@ export const ROLE_PERMISSIONS = {
 
 export function hasPermission(user, permission) {
   if (!user) return false
-  if (user.role === ROLES.ADMIN && permission.startsWith('canView')) return true
-  const perms = ROLE_PERMISSIONS[user.role]
+  if (user.roleUser === ROLES.ADMIN && permission.startsWith('canView')) return true
+  const perms = ROLE_PERMISSIONS[user.roleUser]
   return perms ? perms[permission] || false : false
 }
 

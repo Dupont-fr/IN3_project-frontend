@@ -43,11 +43,11 @@ export default function Navbar({ onMenuClick }) {
           {user && (
             <div className="flex items-center gap-3">
               <div className="text-right hidden sm:block">
-                <div className="text-sm font-medium text-gray-900 dark:text-gray-100">{user.name}</div>
-                <div className="text-xs text-gray-500">{ROLE_LABELS[user.role] || user.role}</div>
+                <div className="text-sm font-medium text-gray-900 dark:text-gray-100">{user.nameUser}</div>
+                <div className="text-xs text-gray-500">{ROLE_LABELS[user.roleUser] || user.roleUser}</div>
               </div>
               <div className="w-9 h-9 rounded-full bg-primary-600 flex items-center justify-center text-white text-sm font-medium">
-                {user.name?.charAt(0)?.toUpperCase() || '?'}
+                {user.nameUser?.charAt(0)?.toUpperCase() || '?'}
               </div>
               <button
                 onClick={() => setShowConfirm(true)}

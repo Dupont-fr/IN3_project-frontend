@@ -8,7 +8,7 @@ import SearchableSelect from '../../components/SearchableSelect'
 export default function EditUser() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const [form, setForm] = useState({ name: '', role: 'ACCUEIL', hospital: '', specialty: '' })
+  const [form, setForm] = useState({ nameUser: '', roleUser: 'ACCUEIL', hospitalUser: '', specialtyUser: '' })
   const [original, setOriginal] = useState(null)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -25,10 +25,10 @@ export default function EditUser() {
         const user = userRes.data.data
         setOriginal(user)
         setForm({
-          name: user.name,
-          role: user.role,
-          hospital: user.hospital || '',
-          specialty: user.specialty || '',
+          nameUser: user.nameUser,
+          roleUser: user.roleUser,
+          hospitalUser: user.hospitalUser || '',
+          specialtyUser: user.specialtyUser || '',
         })
         setHospitals(hospitalsRes.data.data)
       } catch (err) {
@@ -50,12 +50,12 @@ export default function EditUser() {
     setLoading(true)
 
     try {
-      const payload = { name: form.name, role: form.role }
-      if (form.role === 'MEDECIN' || form.role === 'ACCUEIL') {
-        payload.hospital = form.hospital
+      const payload = { nameUser: form.nameUser, roleUser: form.roleUser }
+      if (form.roleUser === 'MEDECIN' || form.roleUser === 'ACCUEIL') {
+        payload.hospitalUser = form.hospitalUser
       }
-      if (form.role === 'MEDECIN') {
-        payload.specialty = form.specialty
+      if (form.roleUser === 'MEDECIN') {
+        payload.specialtyUser = form.specialtyUser
       }
       await usersAPI.update(id, payload)
       navigate('/users')
@@ -72,7 +72,7 @@ export default function EditUser() {
     <div className="max-w-lg mx-auto">
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Modifier l'utilisateur</h1>
-        <p className="text-sm text-gray-500 mt-1">{original?.email}</p>
+        <p className="text-sm text-gray-500 mt-1">{original?.emailUser}</p>
       </div>
 
       {error && (
@@ -84,8 +84,8 @@ export default function EditUser() {
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nom complet</label>
           <input
             type="text"
-            name="name"
-            value={form.name}
+            name="nameUser"
+            value={form.nameUser}
             onChange={handleChange}
             className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none"
             required
@@ -95,8 +95,8 @@ export default function EditUser() {
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Rôle</label>
           <select
-            name="role"
-            value={form.role}
+            name="roleUser"
+            value={form.roleUser}
             onChange={handleChange}
             className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none"
           >
@@ -106,27 +106,27 @@ export default function EditUser() {
           </select>
         </div>
 
-        {(form.role === 'MEDECIN' || form.role === 'ACCUEIL') && (
+        {(form.roleUser === 'MEDECIN' || form.roleUser === 'ACCUEIL') && (
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Hôpital / Centre de travail
             </label>
             <SearchableSelect
               items={hospitals}
-              value={form.hospital}
-              onChange={(val) => setForm({ ...form, hospital: val })}
+              value={form.hospitalUser}
+              onChange={(val) => setForm({ ...form, hospitalUser: val })}
               placeholder="Rechercher un hôpital..."
             />
           </div>
         )}
 
-        {form.role === 'MEDECIN' && (
+        {form.roleUser === 'MEDECIN' && (
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Spécialité</label>
             <select
-              name="specialty"
-              value={form.specialty}
-              onChange={(e) => setForm({ ...form, specialty: e.target.value })}
+              name="specialtyUser"
+              value={form.specialtyUser}
+              onChange={(e) => setForm({ ...form, specialtyUser: e.target.value })}
               className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none"
             >
               <option value="">Sélectionner une spécialité</option>
@@ -139,7 +139,7 @@ export default function EditUser() {
 
         <div className="pt-2">
           <div className="text-xs text-gray-500 mb-3">
-            Email inchangé : <span className="font-medium">{original?.email}</span>
+            Email inchangé : <span className="font-medium">{original?.emailUser}</span>
           </div>
         </div>
 

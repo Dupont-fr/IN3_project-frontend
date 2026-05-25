@@ -5,8 +5,8 @@ import { authAPI } from '../api/userApi'
 import { Hospital, Eye, EyeOff } from 'lucide-react'
 
 export default function Login() {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
+  const [emailUser, setEmailUser] = useState('')
+  const [passwordUser, setPasswordUser] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -19,7 +19,7 @@ export default function Login() {
     setLoading(true)
 
     try {
-      const res = await authAPI.login({ email, password })
+      const res = await authAPI.login({ emailUser, passwordUser })
       const { user, token, mustChangePassword } = res.data.data
       login(user, token, mustChangePassword)
       if (mustChangePassword) {
@@ -55,8 +55,8 @@ export default function Login() {
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email</label>
               <input
                 type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                value={emailUser}
+                onChange={(e) => setEmailUser(e.target.value)}
                 className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition"
                 placeholder="admin@hospital.com"
                 required
@@ -68,8 +68,8 @@ export default function Login() {
               <div className="relative">
                 <input
                   type={showPassword ? 'text' : 'password'}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  value={passwordUser}
+                  onChange={(e) => setPasswordUser(e.target.value)}
                   className="w-full px-4 py-2.5 pr-10 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition"
                   placeholder="Mot de passe"
                   required

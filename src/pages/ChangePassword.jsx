@@ -73,7 +73,7 @@ export default function ChangePassword() {
             </div>
             <h1 className="text-xl font-bold text-gray-900 dark:text-white">Changement de mot de passe</h1>
             <p className="text-sm text-gray-500 mt-1">
-              {user?.name}, veuillez définir votre propre mot de passe
+              {user?.nameUser}, veuillez définir votre propre mot de passe
             </p>
           </div>
 

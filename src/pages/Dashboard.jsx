@@ -50,8 +50,8 @@ const roleActions = {
 export default function Dashboard() {
   const { user } = useAuth()
   const navigate = useNavigate()
-  const config = roleActions[user?.role] || roleActions.ACCUEIL
-  const roleInfo = ROLE_LABELS[user?.role] || user?.role
+  const config = roleActions[user?.roleUser] || roleActions.ACCUEIL
+  const roleInfo = ROLE_LABELS[user?.roleUser] || user?.roleUser
 
   const [searchQuery, setSearchQuery] = useState('')
   const [searchResults, setSearchResults] = useState([])
@@ -95,7 +95,7 @@ export default function Dashboard() {
     <div>
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Tableau de bord</h1>
-        <p className="text-gray-500 mt-1">Bienvenue, {user?.name || 'Utilisateur'}</p>
+        <p className="text-gray-500 mt-1">Bienvenue, {user?.nameUser || 'Utilisateur'}</p>
         <div className="flex items-center gap-2 mt-2">
           <span className="inline-block px-3 py-1 text-xs font-medium rounded-full bg-primary-100 text-primary-700 dark:bg-primary-900/50 dark:text-primary-300">
             {roleInfo}
@@ -135,18 +135,18 @@ export default function Dashboard() {
                 className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors border-b border-gray-100 dark:border-gray-700 last:border-0"
               >
                 <div className="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900 flex items-center justify-center text-primary-700 dark:text-primary-300 text-sm font-medium shrink-0">
-                  {u.name?.charAt(0)?.toUpperCase()}
+                  {u.nameUser?.charAt(0)?.toUpperCase()}
                 </div>
                 <div className="min-w-0">
-                  <div className="text-sm font-medium text-gray-900 dark:text-white truncate">{u.name}</div>
-                  <div className="text-xs text-gray-500 truncate">{u.email}</div>
+                  <div className="text-sm font-medium text-gray-900 dark:text-white truncate">{u.nameUser}</div>
+                  <div className="text-xs text-gray-500 truncate">{u.emailUser}</div>
                 </div>
                 <span className={`ml-auto text-xs font-medium px-2 py-0.5 rounded-full shrink-0 ${
-                  u.role === 'ADMIN' ? 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200' :
-                  u.role === 'MEDECIN' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' :
+                  u.roleUser === 'ADMIN' ? 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200' :
+                  u.roleUser === 'MEDECIN' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' :
                   'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
                 }`}>
-                  {ROLE_LABELS[u.role] || u.role}
+                  {ROLE_LABELS[u.roleUser] || u.roleUser}
                 </span>
               </button>
             ))}

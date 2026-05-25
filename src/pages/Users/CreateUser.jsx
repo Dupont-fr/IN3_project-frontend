@@ -8,7 +8,7 @@ import { Eye, EyeOff } from 'lucide-react'
 
 export default function CreateUser() {
   const navigate = useNavigate()
-  const [form, setForm] = useState({ name: '', email: '', password: '', role: 'ACCUEIL', hospital: '', specialty: '' })
+  const [form, setForm] = useState({ nameUser: '', emailUser: '', passwordUser: '', roleUser: 'ACCUEIL', hospitalUser: '', specialtyUser: '' })
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -28,8 +28,8 @@ export default function CreateUser() {
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value })
-    if (e.target.name === 'role') {
-      setForm((prev) => ({ ...prev, role: e.target.value, hospital: '', specialty: '' }))
+    if (e.target.name === 'roleUser') {
+      setForm((prev) => ({ ...prev, roleUser: e.target.value, hospitalUser: '', specialtyUser: '' }))
     }
   }
 
@@ -40,16 +40,16 @@ export default function CreateUser() {
 
     try {
       const payload = {
-        name: form.name,
-        email: form.email,
-        password: form.password,
-        role: form.role,
+        nameUser: form.nameUser,
+        emailUser: form.emailUser,
+        passwordUser: form.passwordUser,
+        roleUser: form.roleUser,
       }
-      if (form.role === 'MEDECIN' || form.role === 'ACCUEIL') {
-        payload.hospital = form.hospital
+      if (form.roleUser === 'MEDECIN' || form.roleUser === 'ACCUEIL') {
+        payload.hospitalUser = form.hospitalUser
       }
-      if (form.role === 'MEDECIN') {
-        payload.specialty = form.specialty
+      if (form.roleUser === 'MEDECIN') {
+        payload.specialtyUser = form.specialtyUser
       }
       await usersAPI.create(payload)
       navigate('/users')
@@ -76,8 +76,8 @@ export default function CreateUser() {
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nom complet</label>
           <input
             type="text"
-            name="name"
-            value={form.name}
+            name="nameUser"
+            value={form.nameUser}
             onChange={handleChange}
             className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none"
             placeholder="Dr. Jean Martin"
@@ -89,8 +89,8 @@ export default function CreateUser() {
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email</label>
           <input
             type="email"
-            name="email"
-            value={form.email}
+            name="emailUser"
+            value={form.emailUser}
             onChange={handleChange}
             className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none"
             placeholder="jean.martin@hospital.com"
@@ -103,8 +103,8 @@ export default function CreateUser() {
           <div className="relative">
             <input
               type={showPassword ? 'text' : 'password'}
-              name="password"
-              value={form.password}
+            name="passwordUser"
+            value={form.passwordUser}
               onChange={handleChange}
               className="w-full px-4 py-2.5 pr-10 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none"
               placeholder="Min. 8 caractères"
@@ -124,8 +124,8 @@ export default function CreateUser() {
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Rôle</label>
           <select
-            name="role"
-            value={form.role}
+            name="roleUser"
+            value={form.roleUser}
             onChange={handleChange}
             className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none"
           >
@@ -135,29 +135,29 @@ export default function CreateUser() {
           </select>
         </div>
 
-        {(form.role === 'MEDECIN' || form.role === 'ACCUEIL') && (
+        {(form.roleUser === 'MEDECIN' || form.roleUser === 'ACCUEIL') && (
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Hôpital / Centre de travail <span className="text-red-500">*</span>
             </label>
             <SearchableSelect
               items={hospitals}
-              value={form.hospital}
-              onChange={(val) => setForm({ ...form, hospital: val })}
+              value={form.hospitalUser}
+              onChange={(val) => setForm({ ...form, hospitalUser: val })}
               placeholder="Rechercher un hôpital..."
             />
           </div>
         )}
 
-        {form.role === 'MEDECIN' && (
+        {form.roleUser === 'MEDECIN' && (
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Spécialité <span className="text-red-500">*</span>
             </label>
             <select
-              name="specialty"
-              value={form.specialty}
-              onChange={(e) => setForm({ ...form, specialty: e.target.value })}
+              name="specialtyUser"
+              value={form.specialtyUser}
+              onChange={(e) => setForm({ ...form, specialtyUser: e.target.value })}
               className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none"
             >
               <option value="">Sélectionner une spécialité</option>

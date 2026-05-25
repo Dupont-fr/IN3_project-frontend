@@ -15,7 +15,7 @@ export default function UserList() {
   const fetchUsers = useCallback(async () => {
     try {
       const params = {}
-      if (filterRole) params.role = filterRole
+      if (filterRole) params.roleUser = filterRole
       if (search) params.search = search
       const res = await usersAPI.getAll(params)
       setUsers(res.data.data)
@@ -107,25 +107,25 @@ export default function UserList() {
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900 flex items-center justify-center text-primary-700 dark:text-primary-300 text-sm font-medium">
-                          {user.name?.charAt(0)?.toUpperCase()}
+                          {user.nameUser?.charAt(0)?.toUpperCase()}
                         </div>
-                        <span className="font-medium text-gray-900 dark:text-white">{user.name}</span>
+                        <span className="font-medium text-gray-900 dark:text-white">{user.nameUser}</span>
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">{user.email}</td>
+                    <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">{user.emailUser}</td>
                     <td className="px-6 py-4">
-                      <span className={`inline-block px-2.5 py-1 text-xs font-medium rounded-full ${ROLE_BADGES[user.role] || ''}`}>
-                        {ROLE_LABELS[user.role] || user.role}
+                      <span className={`inline-block px-2.5 py-1 text-xs font-medium rounded-full ${ROLE_BADGES[user.roleUser] || ''}`}>
+                        {ROLE_LABELS[user.roleUser] || user.roleUser}
                       </span>
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">
-                      {user.hospital || '-'}
+                      {user.hospitalUser || '-'}
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">
-                      {user.specialty || '-'}
+                      {user.specialtyUser || '-'}
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-500">
-                      {new Date(user.createdAt).toLocaleDateString('fr-FR')}
+                      {new Date(user.createdAtUser).toLocaleDateString('fr-FR')}
                     </td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end gap-2">
