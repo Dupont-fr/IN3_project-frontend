@@ -240,24 +240,15 @@ export default function CreatePatient() {
             <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1'>
               {t('createPatient.field_phone')}
             </label>
-            <div className='flex'>
-              <span className='flex items-center px-3 bg-gray-100 dark:bg-gray-700 border border-r-0 border-gray-300 dark:border-gray-700 rounded-l-lg text-sm text-gray-600 dark:text-gray-400'>
-                +237
-              </span>
-              <input
-                type='tel'
-                name='telephonePatient'
-                value={form.telephonePatient}
-                onChange={handleChange}
-                placeholder='6XX XXX XXX'
-                maxLength={9}
-                className={`flex-1 px-4 py-2.5 border rounded-r-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white outline-none ${
-                  fieldErrors.telephonePatient
-                    ? 'border-red-500 focus:ring-2 focus:ring-red-300'
-                    : 'border-gray-300 dark:border-gray-700 focus:ring-2 focus:ring-primary-500'
-                }`}
-              />
-            </div>
+            <input
+              type='tel'
+              name='telephonePatient'
+              value={form.telephonePatient}
+              onChange={handleChange}
+              placeholder='+237 6XX XXX XXX'
+              maxLength={9}
+              className={inputClass('telephonePatient')}
+            />
             {fieldErrors.telephonePatient && (
               <p className='text-xs text-red-600 mt-1'>{fieldErrors.telephonePatient}</p>
             )}
