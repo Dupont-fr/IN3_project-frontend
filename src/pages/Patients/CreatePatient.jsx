@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { patientsAPI } from '../../api/patientApi'
 import { useTranslation } from 'react-i18next'
@@ -27,21 +27,69 @@ export default function CreatePatient() {
     professionPatient: '',
   })
   const [error, setError] = useState('')
+  const [fieldErrors, setFieldErrors] = useState({})
   const [loading, setLoading] = useState(false)
   const [duplicates, setDuplicates] = useState([])
   const [checking, setChecking] = useState(false)
 
-  const handleChange = (e) =>
-    setForm({ ...form, [e.target.name]: e.target.value })
+  const fieldRefs = {
+    nomPatient: useRef(null),
+    dateNaissancePatient: useRef(null),
+    genrePatient: useRef(null),
+    telephonePatient: useRef(null),
+  }
+
+  const handleChange = (e) => {
+    const { name, value } = e.target
+    setForm({ ...form, [name]: value })
+    if (fieldErrors[name]) {
+      setFieldErrors({ ...fieldErrors, [name]: '' })
+    }
+  }
+
+  const scrollToField = (fieldName) => {
+    const ref = fieldRefs[fieldName]
+    if (ref?.current) {
+      ref.current.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      ref.current.focus()
+    }
+  }
+
+  const validate = () => {
+    const errors = {}
+
+    if (!form.nomPatient?.trim()) {
+      errors.nomPatient = t('createPatient.error_lastname_required')
+    }
+
+    if (!form.dateNaissancePatient) {
+      errors.dateNaissancePatient = t('createPatient.error_dob_required')
+    }
+
+    if (!form.genrePatient) {
+      errors.genrePatient = t('createPatient.error_gender_required')
+    }
+
+    const phone = form.telephonePatient?.replace(/\s/g, '')
+    if (phone && !/^\d{9}$/.test(phone)) {
+      errors.telephonePatient = t('createPatient.phone_validation_error')
+    }
+
+    return errors
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
-    const phone = form.telephonePatient?.replace(/\s/g, '')
-    if (phone && !/^\d{9}$/.test(phone)) {
-      setError(t('createPatient.phone_validation_error'))
+    const errors = validate()
+    setFieldErrors(errors)
+
+    if (Object.keys(errors).length > 0) {
+      const firstError = Object.keys(errors)[0]
+      scrollToField(firstError)
       return
     }
+
     if (duplicates.length > 0) {
       await doCreate()
       return
@@ -79,6 +127,13 @@ export default function CreatePatient() {
 
   const matchLabel = (key) => t(`createPatient.match_${key}`, key)
 
+  const inputClass = (fieldName) =>
+    `w-full px-4 py-2.5 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white outline-none ${
+      fieldErrors[fieldName]
+        ? 'border-red-500 focus:ring-2 focus:ring-red-300'
+        : 'border-gray-300 dark:border-gray-700 focus:ring-2 focus:ring-primary-500'
+    }`
+
   return (
     <div className='max-w-2xl mx-auto'>
       <div className='mb-6'>
@@ -104,7 +159,7 @@ export default function CreatePatient() {
         className='bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6 space-y-4'
       >
         <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
-          <div>
+          <div ref={fieldRefs.nomPatient}>
             <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1'>
               {t('createPatient.field_lastname')} <span className='text-red-500'>*</span>
             </label>
@@ -112,10 +167,12 @@ export default function CreatePatient() {
               name='nomPatient'
               value={form.nomPatient}
               onChange={handleChange}
-              required
               placeholder={t('createPatient.field_lastname')}
-              className='w-full px-4 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 outline-none'
+              className={inputClass('nomPatient')}
             />
+            {fieldErrors.nomPatient && (
+              <p className='text-xs text-red-600 mt-1'>{fieldErrors.nomPatient}</p>
+            )}
             <p className='text-xs text-gray-400 mt-1'>
               {t('createPatient.field_lastname_hint')}
             </p>
@@ -129,13 +186,13 @@ export default function CreatePatient() {
               value={form.prenomPatient}
               onChange={handleChange}
               placeholder={t('createPatient.field_firstname_placeholder')}
-              className='w-full px-4 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 outline-none'
+              className={inputClass('prenomPatient')}
             />
           </div>
         </div>
 
         <div className='grid grid-cols-1 sm:grid-cols-3 gap-4'>
-          <div>
+          <div ref={fieldRefs.dateNaissancePatient}>
             <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1'>
               {t('createPatient.field_dob')} <span className='text-red-500'>*</span>
             </label>
@@ -144,11 +201,13 @@ export default function CreatePatient() {
               name='dateNaissancePatient'
               value={form.dateNaissancePatient}
               onChange={handleChange}
-              required
-              className='w-full px-4 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 outline-none'
+              className={inputClass('dateNaissancePatient')}
             />
+            {fieldErrors.dateNaissancePatient && (
+              <p className='text-xs text-red-600 mt-1'>{fieldErrors.dateNaissancePatient}</p>
+            )}
           </div>
-          <div>
+          <div ref={fieldRefs.genrePatient}>
             <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1'>
               {t('createPatient.field_gender')} <span className='text-red-500'>*</span>
             </label>
@@ -156,15 +215,17 @@ export default function CreatePatient() {
               name='genrePatient'
               value={form.genrePatient}
               onChange={handleChange}
-              required
-              className='w-full px-4 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 outline-none'
+              className={inputClass('genrePatient')}
             >
               <option value=''>{t('createPatient.field_gender_placeholder')}</option>
               <option value='Homme'>{t('createPatient.field_gender_male')}</option>
               <option value='Femme'>{t('createPatient.field_gender_female')}</option>
             </select>
+            {fieldErrors.genrePatient && (
+              <p className='text-xs text-red-600 mt-1'>{fieldErrors.genrePatient}</p>
+            )}
           </div>
-          <div>
+          <div ref={fieldRefs.telephonePatient}>
             <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1'>
               {t('createPatient.field_phone')}
             </label>
@@ -174,8 +235,11 @@ export default function CreatePatient() {
               value={form.telephonePatient}
               onChange={handleChange}
               placeholder={t('createPatient.field_phone_placeholder')}
-              className='w-full px-4 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 outline-none'
+              className={inputClass('telephonePatient')}
             />
+            {fieldErrors.telephonePatient && (
+              <p className='text-xs text-red-600 mt-1'>{fieldErrors.telephonePatient}</p>
+            )}
           </div>
         </div>
 
@@ -196,7 +260,7 @@ export default function CreatePatient() {
                 value={form.nomPere}
                 onChange={handleChange}
                 placeholder={t('createPatient.field_father_placeholder')}
-                className='w-full px-4 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 outline-none'
+                className={inputClass('nomPere')}
               />
             </div>
             <div>
@@ -208,7 +272,7 @@ export default function CreatePatient() {
                 value={form.nomMere}
                 onChange={handleChange}
                 placeholder={t('createPatient.field_mother_placeholder')}
-                className='w-full px-4 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 outline-none'
+                className={inputClass('nomMere')}
               />
             </div>
           </div>
@@ -224,7 +288,7 @@ export default function CreatePatient() {
               value={form.adresseRue}
               onChange={handleChange}
               placeholder={t('createPatient.field_street_placeholder')}
-              className='w-full px-4 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 outline-none mb-3'
+              className={inputClass('adresseRue') + ' mb-3'}
             />
           </div>
           <div className='grid grid-cols-2 gap-4'>
@@ -233,7 +297,7 @@ export default function CreatePatient() {
               value={form.adresseVille}
               onChange={handleChange}
               placeholder={t('createPatient.field_city_placeholder')}
-              className='w-full px-4 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 outline-none'
+              className={inputClass('adresseVille')}
             />
 
             <input
@@ -241,7 +305,7 @@ export default function CreatePatient() {
               value={form.adresseCodePostal}
               onChange={handleChange}
               placeholder={t('createPatient.field_zip_placeholder')}
-              className='w-full px-4 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 outline-none'
+              className={inputClass('adresseCodePostal')}
             />
           </div>
         </div>
@@ -256,7 +320,7 @@ export default function CreatePatient() {
                 {t('createPatient.field_groupe_sanguin')}
               </label>
               <select name='groupeSanguinPatient' value={form.groupeSanguinPatient} onChange={handleChange}
-                className='w-full px-4 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 outline-none'>
+                className={inputClass('groupeSanguinPatient')}>
                 <option value=''>{t('createPatient.field_groupe_sanguin_placeholder')}</option>
                 <option value='A'>{t('createPatient.field_groupe_sanguin_A')}</option>
                 <option value='B'>{t('createPatient.field_groupe_sanguin_B')}</option>
@@ -269,7 +333,7 @@ export default function CreatePatient() {
                 {t('createPatient.field_rhesus')}
               </label>
               <select name='rhesusPatient' value={form.rhesusPatient} onChange={handleChange}
-                className='w-full px-4 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 outline-none'>
+                className={inputClass('rhesusPatient')}>
                 <option value=''>{t('createPatient.field_rhesus_placeholder')}</option>
                 <option value='Positif'>{t('createPatient.field_rhesus_positif')}</option>
                 <option value='Negatif'>{t('createPatient.field_rhesus_negatif')}</option>
@@ -281,7 +345,7 @@ export default function CreatePatient() {
               </label>
               <input name='professionPatient' value={form.professionPatient} onChange={handleChange}
                 placeholder={t('createPatient.field_profession_placeholder')}
-                className='w-full px-4 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 outline-none' />
+                className={inputClass('professionPatient')} />
             </div>
           </div>
           <div className='grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4'>
@@ -290,7 +354,7 @@ export default function CreatePatient() {
                 {t('createPatient.field_situation')}
               </label>
               <select name='situationMatrimonialePatient' value={form.situationMatrimonialePatient} onChange={handleChange}
-                className='w-full px-4 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 outline-none'>
+                className={inputClass('situationMatrimonialePatient')}>
                 <option value=''>{t('createPatient.field_situation_placeholder')}</option>
                 <option value='Celibataire'>{t('createPatient.field_situation_celibataire')}</option>
                 <option value='Marie'>{t('createPatient.field_situation_marie')}</option>
@@ -304,7 +368,7 @@ export default function CreatePatient() {
               </label>
               <input name='religionPatient' value={form.religionPatient} onChange={handleChange}
                 placeholder={t('createPatient.field_religion')}
-                className='w-full px-4 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 outline-none' />
+                className={inputClass('religionPatient')} />
             </div>
             <div>
               <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1'>
@@ -312,7 +376,7 @@ export default function CreatePatient() {
               </label>
               <input name='lieuNaissancePatient' value={form.lieuNaissancePatient} onChange={handleChange}
                 placeholder={t('createPatient.field_lieu_naissance_placeholder')}
-                className='w-full px-4 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 outline-none' />
+                className={inputClass('lieuNaissancePatient')} />
             </div>
           </div>
           <div className='mt-4'>
@@ -321,7 +385,7 @@ export default function CreatePatient() {
             </label>
             <input name='paysPatient' value={form.paysPatient} onChange={handleChange}
               placeholder={t('createPatient.field_pays_placeholder')}
-              className='w-full px-4 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 outline-none' />
+              className={inputClass('paysPatient')} />
           </div>
         </div>
 

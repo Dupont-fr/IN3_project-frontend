@@ -30,10 +30,16 @@ export default function CreateConsultation() {
   })
   const [examens, setExamens] = useState([])
   const [error, setError] = useState('')
+  const [fieldErrors, setFieldErrors] = useState({})
   const [loading, setLoading] = useState(false)
   const [hospitalSearch, setHospitalSearch] = useState({})
   const [openHospitalIdx, setOpenHospitalIdx] = useState(null)
   const hospitalRef = useRef(null)
+
+  const fieldRefs = {
+    patientId: useRef(null),
+    date: useRef(null),
+  }
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -52,7 +58,21 @@ export default function CreateConsultation() {
 
   const fullName = (p) => [p.nom_patient, p.prenom_patient].filter(Boolean).join(' ')
 
-  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value })
+  const handleChange = (e) => {
+    const { name, value } = e.target
+    setForm({ ...form, [name]: value })
+    if (fieldErrors[name]) {
+      setFieldErrors({ ...fieldErrors, [name]: '' })
+    }
+  }
+
+  const scrollToField = (fieldName) => {
+    const ref = fieldRefs[fieldName]
+    if (ref?.current) {
+      ref.current.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      ref.current.focus()
+    }
+  }
 
   const addExamen = () => {
     setExamens([...examens, { type: '', description: '', hopitalDestination: '' }])
@@ -68,13 +88,32 @@ export default function CreateConsultation() {
     setExamens(updated)
   }
 
+  const validate = () => {
+    const errors = {}
+
+    if (!form.patientId) {
+      errors.patientId = t('createConsultation.error_patient_required')
+    }
+
+    if (!form.date) {
+      errors.date = t('createConsultation.error_date_required')
+    }
+
+    return errors
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
-    if (!form.patientId || !form.date) {
-      setError(t('createConsultation.error_required'))
+    setError('')
+    const errors = validate()
+    setFieldErrors(errors)
+
+    if (Object.keys(errors).length > 0) {
+      const firstError = Object.keys(errors)[0]
+      scrollToField(firstError)
       return
     }
-    setError('')
+
     setLoading(true)
     try {
       const res = await consultationsAPI.create({
@@ -98,13 +137,22 @@ export default function CreateConsultation() {
 
       navigate('/consultations')
     } catch (err) {
-      setError(err.response?.data?.message || t('createConsultation.error_create'))
+      const msg = err.response?.data?.message || t('createConsultation.error_create')
+      setError(msg)
+      if (msg.includes('déjà été consulté')) {
+        scrollToField('patientId')
+      }
     } finally {
       setLoading(false)
     }
   }
 
-  const inputClass = "w-full px-4 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 outline-none"
+  const inputClass = (fieldName) =>
+    `w-full px-4 py-2.5 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white outline-none ${
+      fieldErrors[fieldName]
+        ? 'border-red-500 focus:ring-2 focus:ring-red-300'
+        : 'border-gray-300 dark:border-gray-700 focus:ring-2 focus:ring-primary-500'
+    }`
 
   return (
     <div className="max-w-3xl mx-auto">
@@ -119,19 +167,25 @@ export default function CreateConsultation() {
       {error && <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">{error}</div>}
 
       <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6 space-y-6">
-        <div>
+        <div ref={fieldRefs.patientId}>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 flex items-center gap-1.5">
             <User className="w-4 h-4" /> {t('createConsultation.field_patient')} *
           </label>
-          <select name="patientId" value={form.patientId} onChange={handleChange} required className={inputClass}>
+          <select name="patientId" value={form.patientId} onChange={handleChange} className={inputClass('patientId')}>
             <option value="">{t('createConsultation.field_patient_placeholder')}</option>
             {patients.map((p) => <option key={p.id} value={p.id}>{fullName(p)}</option>)}
           </select>
+          {fieldErrors.patientId && (
+            <p className="text-xs text-red-600 mt-1">{fieldErrors.patientId}</p>
+          )}
         </div>
 
-        <div>
+        <div ref={fieldRefs.date}>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('createConsultation.field_date')} *</label>
-          <input type="date" name="date" value={form.date} onChange={handleChange} required className={inputClass} />
+          <input type="date" name="date" value={form.date} onChange={handleChange} className={inputClass('date')} />
+          {fieldErrors.date && (
+            <p className="text-xs text-red-600 mt-1">{fieldErrors.date}</p>
+          )}
         </div>
 
         <div>
@@ -140,7 +194,7 @@ export default function CreateConsultation() {
           </label>
           <textarea name="motifConsultation" value={form.motifConsultation} onChange={handleChange} rows={3}
             placeholder={t('createConsultation.field_motif_placeholder')}
-            className={inputClass} />
+            className={inputClass('motifConsultation')} />
         </div>
 
         <div>
@@ -153,28 +207,28 @@ export default function CreateConsultation() {
                 <Weight className="w-3.5 h-3.5" /> {t('createConsultation.field_weight')}
               </label>
               <input name="poids" value={form.poids} onChange={handleChange} placeholder={t('createConsultation.field_weight_placeholder')}
-                className={inputClass} />
+                className={inputClass('poids')} />
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-500 mb-1 flex items-center gap-1">
                 <Ruler className="w-3.5 h-3.5" /> {t('createConsultation.field_height')}
               </label>
               <input name="taille" value={form.taille} onChange={handleChange} placeholder={t('createConsultation.field_height_placeholder')}
-                className={inputClass} />
+                className={inputClass('taille')} />
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-500 mb-1 flex items-center gap-1">
                 <Thermometer className="w-3.5 h-3.5" /> {t('createConsultation.field_temperature')}
               </label>
               <input name="temperature" value={form.temperature} onChange={handleChange} placeholder={t('createConsultation.field_temperature_placeholder')}
-                className={inputClass} />
+                className={inputClass('temperature')} />
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-500 mb-1 flex items-center gap-1">
                 <Heart className="w-3.5 h-3.5" /> {t('createConsultation.field_blood_pressure')}
               </label>
               <input name="tension" value={form.tension} onChange={handleChange} placeholder={t('createConsultation.field_blood_pressure_placeholder')}
-                className={inputClass} />
+                className={inputClass('tension')} />
             </div>
           </div>
         </div>
@@ -188,13 +242,13 @@ export default function CreateConsultation() {
               <label className="block text-xs font-medium text-gray-500 mb-1">{t('createConsultation.field_urgence_nom')}</label>
               <input name="contactUrgenceNom" value={form.contactUrgenceNom} onChange={handleChange}
                 placeholder={t('createConsultation.field_urgence_nom_placeholder')}
-                className={inputClass} />
+                className={inputClass('contactUrgenceNom')} />
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-500 mb-1">{t('createConsultation.field_urgence_telephone')}</label>
               <input name="contactUrgenceTelephone" value={form.contactUrgenceTelephone} onChange={handleChange}
                 placeholder={t('createConsultation.field_urgence_telephone_placeholder')}
-                className={inputClass} />
+                className={inputClass('contactUrgenceTelephone')} />
             </div>
           </div>
         </div>
@@ -222,7 +276,7 @@ export default function CreateConsultation() {
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div>
                     <label className="block text-xs font-medium text-gray-500 mb-1">{t('createConsultation.examen_type')}</label>
-                    <select value={ex.type} onChange={(e) => updateExamen(idx, 'type', e.target.value)} className={inputClass}>
+                    <select value={ex.type} onChange={(e) => updateExamen(idx, 'type', e.target.value)} className={inputClass('examen_type_' + idx)}>
                       <option value="">{t('createConsultation.examen_type_placeholder')}</option>
                       {EXAMEN_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
                     </select>
@@ -230,7 +284,7 @@ export default function CreateConsultation() {
                   <div>
                     <label className="block text-xs font-medium text-gray-500 mb-1">{t('createConsultation.examen_description')}</label>
                     <input value={ex.description} onChange={(e) => updateExamen(idx, 'description', e.target.value)}
-                      placeholder={t('createConsultation.examen_description_placeholder')} className={inputClass} />
+                      placeholder={t('createConsultation.examen_description_placeholder')} className={inputClass('examen_desc_' + idx)} />
                   </div>
                   <div className="relative" ref={hospitalRef}>
                     <label className="block text-xs font-medium text-gray-500 mb-1">{t('createConsultation.examen_hospital')}</label>
@@ -245,7 +299,7 @@ export default function CreateConsultation() {
                         }}
                         onFocus={() => setOpenHospitalIdx(idx)}
                         placeholder={t('createConsultation.examen_hospital_placeholder')}
-                        className={`${inputClass} pl-9`}
+                        className={`${inputClass('examen_hosp_' + idx)} pl-9`}
                       />
                     </div>
                     {openHospitalIdx === idx && (hospitalSearch[idx] || '').length > 0 && (
