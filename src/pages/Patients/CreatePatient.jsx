@@ -55,6 +55,15 @@ export default function CreatePatient() {
     }
   }
 
+  const isFakePhone = (num) => {
+    if (!num) return false
+    const clean = num.replace(/\D/g, '')
+    if (/^(\d)\1{8}$/.test(clean)) return true
+    if (/^0{9}$/.test(clean)) return true
+    if (/^1{9}$/.test(clean)) return true
+    return false
+  }
+
   const validate = () => {
     const errors = {}
 
@@ -72,7 +81,9 @@ export default function CreatePatient() {
 
     const phone = form.telephonePatient?.replace(/\s/g, '')
     if (phone && !/^\d{9}$/.test(phone)) {
-      errors.telephonePatient = t('createPatient.phone_validation_error')
+      errors.telephonePatient = 'Le numéro doit contenir exactement 9 chiffres'
+    } else if (phone && isFakePhone(phone)) {
+      errors.telephonePatient = 'Numéro de téléphone invalide'
     }
 
     return errors
@@ -229,14 +240,24 @@ export default function CreatePatient() {
             <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1'>
               {t('createPatient.field_phone')}
             </label>
-            <input
-              type='tel'
-              name='telephonePatient'
-              value={form.telephonePatient}
-              onChange={handleChange}
-              placeholder={t('createPatient.field_phone_placeholder')}
-              className={inputClass('telephonePatient')}
-            />
+            <div className='flex'>
+              <span className='flex items-center px-3 bg-gray-100 dark:bg-gray-700 border border-r-0 border-gray-300 dark:border-gray-700 rounded-l-lg text-sm text-gray-600 dark:text-gray-400'>
+                +237
+              </span>
+              <input
+                type='tel'
+                name='telephonePatient'
+                value={form.telephonePatient}
+                onChange={handleChange}
+                placeholder='6XX XXX XXX'
+                maxLength={9}
+                className={`flex-1 px-4 py-2.5 border rounded-r-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white outline-none ${
+                  fieldErrors.telephonePatient
+                    ? 'border-red-500 focus:ring-2 focus:ring-red-300'
+                    : 'border-gray-300 dark:border-gray-700 focus:ring-2 focus:ring-primary-500'
+                }`}
+              />
+            </div>
             {fieldErrors.telephonePatient && (
               <p className='text-xs text-red-600 mt-1'>{fieldErrors.telephonePatient}</p>
             )}
