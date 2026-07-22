@@ -39,6 +39,11 @@ export default function CreateConsultation() {
   const fieldRefs = {
     patientId: useRef(null),
     date: useRef(null),
+    motifConsultation: useRef(null),
+    poids: useRef(null),
+    taille: useRef(null),
+    temperature: useRef(null),
+    tension: useRef(null),
   }
 
   useEffect(() => {
@@ -92,11 +97,48 @@ export default function CreateConsultation() {
     const errors = {}
 
     if (!form.patientId) {
-      errors.patientId = t('createConsultation.error_patient_required')
+      errors.patientId = 'Veuillez sélectionner un patient'
     }
 
     if (!form.date) {
-      errors.date = t('createConsultation.error_date_required')
+      errors.date = 'La date de consultation est requise'
+    }
+
+    if (!form.motifConsultation?.trim()) {
+      errors.motifConsultation = 'Le motif de la consultation est requis'
+    }
+
+    if (!form.poids?.trim()) {
+      errors.poids = 'Le poids est requis'
+    } else {
+      const poids = parseFloat(form.poids.replace(',', '.'))
+      if (isNaN(poids) || poids < 0.5 || poids > 500) {
+        errors.poids = 'Le poids doit être entre 0.5 et 500 kg'
+      }
+    }
+
+    if (!form.taille?.trim()) {
+      errors.taille = 'La taille est requise'
+    } else {
+      const taille = parseFloat(form.taille.replace(',', '.'))
+      if (isNaN(taille) || taille < 20 || taille > 250) {
+        errors.taille = 'La taille doit être entre 20 et 250 cm'
+      }
+    }
+
+    if (!form.temperature?.trim()) {
+      errors.temperature = 'La température est requise'
+    } else {
+      const temp = parseFloat(form.temperature.replace(',', '.'))
+      if (isNaN(temp) || temp < 30 || temp > 45) {
+        errors.temperature = 'La température doit être entre 30 et 45°C'
+      }
+    }
+
+    if (!form.tension?.trim()) {
+      errors.tension = 'La tension est requise'
+    } else if (!/^\d{1,3}\/\d{1,3}$/.test(form.tension.replace(/\s/g, ''))) {
+      errors.tension = 'Format requis : ex 12/8'
     }
 
     return errors
@@ -137,7 +179,7 @@ export default function CreateConsultation() {
 
       navigate('/consultations')
     } catch (err) {
-      const msg = err.response?.data?.message || t('createConsultation.error_create')
+      const msg = err.response?.data?.message || 'Erreur lors de la création de la consultation'
       setError(msg)
       if (msg.includes('déjà été consulté')) {
         scrollToField('patientId')
@@ -169,7 +211,7 @@ export default function CreateConsultation() {
       <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6 space-y-6">
         <div ref={fieldRefs.patientId}>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 flex items-center gap-1.5">
-            <User className="w-4 h-4" /> {t('createConsultation.field_patient')} *
+            <User className="w-4 h-4" /> {t('createConsultation.field_patient')} <span className="text-red-500">*</span>
           </label>
           <select name="patientId" value={form.patientId} onChange={handleChange} className={inputClass('patientId')}>
             <option value="">{t('createConsultation.field_patient_placeholder')}</option>
@@ -181,54 +223,71 @@ export default function CreateConsultation() {
         </div>
 
         <div ref={fieldRefs.date}>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('createConsultation.field_date')} *</label>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            {t('createConsultation.field_date')} <span className="text-red-500">*</span>
+          </label>
           <input type="date" name="date" value={form.date} onChange={handleChange} className={inputClass('date')} />
           {fieldErrors.date && (
             <p className="text-xs text-red-600 mt-1">{fieldErrors.date}</p>
           )}
         </div>
 
-        <div>
+        <div ref={fieldRefs.motifConsultation}>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 flex items-center gap-1.5">
-            <Stethoscope className="w-4 h-4" /> {t('createConsultation.field_motif')}
+            <Stethoscope className="w-4 h-4" /> {t('createConsultation.field_motif')} <span className="text-red-500">*</span>
           </label>
           <textarea name="motifConsultation" value={form.motifConsultation} onChange={handleChange} rows={3}
-            placeholder={t('createConsultation.field_motif_placeholder')}
+            placeholder="Décrivez brièvement la raison de la visite..."
             className={inputClass('motifConsultation')} />
+          {fieldErrors.motifConsultation && (
+            <p className="text-xs text-red-600 mt-1">{fieldErrors.motifConsultation}</p>
+          )}
         </div>
 
         <div>
           <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 flex items-center gap-1.5">
-            <Heart className="w-4 h-4 text-red-500" /> {t('createConsultation.section_vitals')}
+            <Heart className="w-4 h-4 text-red-500" /> {t('createConsultation.section_vitals')} <span className="text-red-500">*</span>
           </h3>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <div>
+            <div ref={fieldRefs.poids}>
               <label className="block text-xs font-medium text-gray-500 mb-1 flex items-center gap-1">
-                <Weight className="w-3.5 h-3.5" /> {t('createConsultation.field_weight')}
+                <Weight className="w-3.5 h-3.5" /> {t('createConsultation.field_weight')} <span className="text-red-500">*</span>
               </label>
-              <input name="poids" value={form.poids} onChange={handleChange} placeholder={t('createConsultation.field_weight_placeholder')}
+              <input name="poids" value={form.poids} onChange={handleChange} placeholder="ex: 70"
                 className={inputClass('poids')} />
+              {fieldErrors.poids && (
+                <p className="text-xs text-red-600 mt-1">{fieldErrors.poids}</p>
+              )}
             </div>
-            <div>
+            <div ref={fieldRefs.taille}>
               <label className="block text-xs font-medium text-gray-500 mb-1 flex items-center gap-1">
-                <Ruler className="w-3.5 h-3.5" /> {t('createConsultation.field_height')}
+                <Ruler className="w-3.5 h-3.5" /> {t('createConsultation.field_height')} <span className="text-red-500">*</span>
               </label>
-              <input name="taille" value={form.taille} onChange={handleChange} placeholder={t('createConsultation.field_height_placeholder')}
+              <input name="taille" value={form.taille} onChange={handleChange} placeholder="ex: 175"
                 className={inputClass('taille')} />
+              {fieldErrors.taille && (
+                <p className="text-xs text-red-600 mt-1">{fieldErrors.taille}</p>
+              )}
             </div>
-            <div>
+            <div ref={fieldRefs.temperature}>
               <label className="block text-xs font-medium text-gray-500 mb-1 flex items-center gap-1">
-                <Thermometer className="w-3.5 h-3.5" /> {t('createConsultation.field_temperature')}
+                <Thermometer className="w-3.5 h-3.5" /> {t('createConsultation.field_temperature')} <span className="text-red-500">*</span>
               </label>
-              <input name="temperature" value={form.temperature} onChange={handleChange} placeholder={t('createConsultation.field_temperature_placeholder')}
+              <input name="temperature" value={form.temperature} onChange={handleChange} placeholder="ex: 37.2"
                 className={inputClass('temperature')} />
+              {fieldErrors.temperature && (
+                <p className="text-xs text-red-600 mt-1">{fieldErrors.temperature}</p>
+              )}
             </div>
-            <div>
+            <div ref={fieldRefs.tension}>
               <label className="block text-xs font-medium text-gray-500 mb-1 flex items-center gap-1">
-                <Heart className="w-3.5 h-3.5" /> {t('createConsultation.field_blood_pressure')}
+                <Heart className="w-3.5 h-3.5" /> {t('createConsultation.field_blood_pressure')} <span className="text-red-500">*</span>
               </label>
-              <input name="tension" value={form.tension} onChange={handleChange} placeholder={t('createConsultation.field_blood_pressure_placeholder')}
+              <input name="tension" value={form.tension} onChange={handleChange} placeholder="ex: 12/8"
                 className={inputClass('tension')} />
+              {fieldErrors.tension && (
+                <p className="text-xs text-red-600 mt-1">{fieldErrors.tension}</p>
+              )}
             </div>
           </div>
         </div>
@@ -241,13 +300,13 @@ export default function CreateConsultation() {
             <div>
               <label className="block text-xs font-medium text-gray-500 mb-1">{t('createConsultation.field_urgence_nom')}</label>
               <input name="contactUrgenceNom" value={form.contactUrgenceNom} onChange={handleChange}
-                placeholder={t('createConsultation.field_urgence_nom_placeholder')}
+                placeholder="Nom et prénom"
                 className={inputClass('contactUrgenceNom')} />
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-500 mb-1">{t('createConsultation.field_urgence_telephone')}</label>
               <input name="contactUrgenceTelephone" value={form.contactUrgenceTelephone} onChange={handleChange}
-                placeholder={t('createConsultation.field_urgence_telephone_placeholder')}
+                placeholder="Téléphone d'urgence"
                 className={inputClass('contactUrgenceTelephone')} />
             </div>
           </div>
