@@ -68,15 +68,15 @@ export default function CreatePatient() {
     const errors = {}
 
     if (!form.nomPatient?.trim()) {
-      errors.nomPatient = t('createPatient.error_lastname_required')
+      errors.nomPatient = 'Le nom est requis'
     }
 
     if (!form.dateNaissancePatient) {
-      errors.dateNaissancePatient = t('createPatient.error_dob_required')
+      errors.dateNaissancePatient = 'La date de naissance est requise'
     }
 
     if (!form.genrePatient) {
-      errors.genrePatient = t('createPatient.error_gender_required')
+      errors.genrePatient = 'Le sexe est requis'
     }
 
     const phone = form.telephonePatient?.replace(/\s/g, '')
