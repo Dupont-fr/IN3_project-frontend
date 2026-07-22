@@ -52,7 +52,7 @@ export default function CreateConsultation() {
   }, [])
 
   useEffect(() => {
-    patientsAPI.getAll().then((res) => setPatients(res.data.patients || [])).catch(() => {})
+    patientsAPI.getAll({ allHospitals: true }).then((res) => setPatients(res.data.patients || [])).catch(() => {})
     hospitalsAPI.getAll().then((res) => setHospitals(res.data.data || [])).catch(() => {})
   }, [])
 
