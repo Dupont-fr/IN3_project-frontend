@@ -3,9 +3,46 @@ import { useAuth } from '../../context/AuthContext'
 import { useNotifications } from '../../context/NotificationContext'
 import { useNavigate } from 'react-router-dom'
 import { ROLE_LABELS } from '../../utils/roleHelpers'
-import { Moon, Sun, Menu, Building2, Bell, BellRing } from 'lucide-react'
+import { Moon, Sun, Menu, Building2, Bell, BellRing, ArrowRightLeft, FileText, KeyRound } from 'lucide-react'
 import { useState, useEffect, useRef } from 'react'
 import LanguageSwitcher from '../LanguageSwitcher'
+
+const NOTIF_ICONS = {
+  transfert: ArrowRightLeft,
+  examen: FileText,
+  password_reset: KeyRound,
+}
+
+const NOTIF_COLORS = {
+  transfert: 'text-blue-600 bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400',
+  examen: 'text-orange-600 bg-orange-100 dark:bg-orange-900/30 dark:text-orange-400',
+  password_reset: 'text-red-600 bg-red-100 dark:bg-red-900/30 dark:text-red-400',
+}
+
+function getNotifLink(n) {
+  if (n.link) return n.link
+  switch (n.type) {
+    case 'transfert':
+      return n.data?.newConsultationId ? `/consultations/${n.data.newConsultationId}` : '/consultations'
+    case 'examen':
+      return '/examens/pending'
+    case 'password_reset':
+      return '/admin/password-resets'
+    default:
+      return '/dashboard'
+  }
+}
+
+function formatTime(dateStr) {
+  if (!dateStr) return ''
+  const d = new Date(dateStr)
+  const now = new Date()
+  const diff = now - d
+  if (diff < 60000) return 'À l\'instant'
+  if (diff < 3600000) return `il y a ${Math.floor(diff / 60000)}min`
+  if (diff < 86400000) return `il y a ${Math.floor(diff / 3600000)}h`
+  return d.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' })
+}
 
 export default function Navbar({ onMenuClick }) {
   const { t } = useTranslation()
@@ -29,6 +66,12 @@ export default function Navbar({ onMenuClick }) {
   }, [])
 
   const toggleTheme = () => setDark((prev) => !prev)
+
+  const handleNotifClick = (n) => {
+    const link = getNotifLink(n)
+    navigate(link)
+    setShowNotif(false)
+  }
 
   return (
     <header className="h-16 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between px-4 lg:px-6">
@@ -80,16 +123,29 @@ export default function Navbar({ onMenuClick }) {
               {notifications.length === 0 ? (
                 <p className="p-4 text-sm text-gray-500 text-center">{t('nav.no_notifications')}</p>
               ) : (
-                notifications.slice(0, 20).map((n) => (
-                  <button
-                    key={n.id}
-                    onClick={() => { navigate('/examens/pending'); setShowNotif(false) }}
-                    className={`w-full text-left p-3 hover:bg-gray-50 dark:hover:bg-gray-800 border-b border-gray-50 dark:border-gray-800 last:border-0 ${n.read ? '' : 'bg-primary-50/50 dark:bg-primary-900/10'}`}
-                  >
-                    <p className="text-sm font-medium text-gray-900 dark:text-white">{n.title}</p>
-                    <p className="text-xs text-gray-500 mt-0.5">{n.message}</p>
-                  </button>
-                ))
+                notifications.slice(0, 20).map((n) => {
+                  const Icon = NOTIF_ICONS[n.type] || Bell
+                  const colorClass = NOTIF_COLORS[n.type] || 'text-gray-600 bg-gray-100 dark:bg-gray-800 dark:text-gray-400'
+                  return (
+                    <button
+                      key={n.id}
+                      onClick={() => handleNotifClick(n)}
+                      className={`w-full text-left p-3 hover:bg-gray-50 dark:hover:bg-gray-800 border-b border-gray-50 dark:border-gray-800 last:border-0 flex items-start gap-3 ${n.read ? '' : 'bg-primary-50/50 dark:bg-primary-900/10'}`}
+                    >
+                      <div className={`mt-0.5 p-1.5 rounded-lg ${colorClass}`}>
+                        <Icon className="w-3.5 h-3.5" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between gap-2">
+                          <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{n.title}</p>
+                          {!n.read && <span className="w-2 h-2 rounded-full bg-primary-500 shrink-0" />}
+                        </div>
+                        <p className="text-xs text-gray-500 mt-0.5 line-clamp-2">{n.message}</p>
+                        <p className="text-[10px] text-gray-400 mt-1">{formatTime(n.createdAt)}</p>
+                      </div>
+                    </button>
+                  )
+                })
               )}
             </div>
           )}

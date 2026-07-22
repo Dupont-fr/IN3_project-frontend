@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, useCallback, useRef, startTransition } from 'react'
 import { io } from 'socket.io-client'
 import { useAuth } from './AuthContext'
+import { notificationsAPI } from '../api/consultationApi'
 
 const NotificationContext = createContext(null)
 
@@ -9,14 +10,17 @@ const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'http://localhost:3003'
 let globalSocket = null
 
 export function NotificationProvider({ children }) {
-  const { user } = useAuth()
+  const { user, token } = useAuth()
   const [notifications, setNotifications] = useState([])
   const [socket, setSocket] = useState(null)
   const [unreadCount, setUnreadCount] = useState(0)
   const hospitalRef = useRef(null)
+  const userIdRef = useRef(null)
 
   useEffect(() => {
-    if (!user?.hospitalUser) {
+    if (!user || !token) {
+      setNotifications([])
+      setUnreadCount(0)
       if (globalSocket) {
         globalSocket.disconnect()
         globalSocket = null
@@ -25,7 +29,8 @@ export function NotificationProvider({ children }) {
       return
     }
 
-    hospitalRef.current = user.hospitalUser
+    hospitalRef.current = user.hospitalUser || null
+    userIdRef.current = user?._id || user?.id || null
 
     if (!globalSocket) {
       globalSocket = io(SOCKET_URL, { transports: ['websocket', 'polling'] })
@@ -34,7 +39,22 @@ export function NotificationProvider({ children }) {
     const s = globalSocket
 
     const onConnect = () => {
-      s.emit('join:notifications', hospitalRef.current)
+      if (hospitalRef.current) {
+        s.emit('join:notifications', hospitalRef.current)
+      }
+      if (userIdRef.current) {
+        s.emit('join:user', userIdRef.current)
+      }
+    }
+
+    const onNotification = (notification) => {
+      startTransition(() => {
+        setNotifications((prev) => {
+          if (prev.some((n) => n.id === notification.id)) return prev
+          return [notification, ...prev]
+        })
+        setUnreadCount((prev) => prev + 1)
+      })
     }
 
     const onExamen = (data) => {
@@ -48,29 +68,69 @@ export function NotificationProvider({ children }) {
         createdAt: new Date().toISOString(),
       }
       startTransition(() => {
-        setNotifications((prev) => [notif, ...prev])
+        setNotifications((prev) => {
+          if (prev.some((n) => n.type === 'examen' && n.data?.consultationId === data.consultationId)) return prev
+          return [notif, ...prev]
+        })
         setUnreadCount((prev) => prev + 1)
       })
     }
 
     s.on('connect', onConnect)
+    s.on('notification:new', onNotification)
     s.on('examen:new', onExamen)
 
     if (s.connected) {
-      s.emit('join:notifications', user.hospitalUser)
+      onConnect()
     }
 
     setSocket(s)
 
     return () => {
       s.off('connect', onConnect)
+      s.off('notification:new', onNotification)
       s.off('examen:new', onExamen)
     }
-  }, [user?.hospitalUser])
+  }, [user?._id, user?.id, user?.hospitalUser, token])
 
-  const markAllRead = useCallback(() => {
+  useEffect(() => {
+    if (!token) return
+    let cancelled = false
+
+    async function loadNotifications() {
+      try {
+        const [notifsRes, countRes] = await Promise.all([
+          notificationsAPI.getAll({ limit: 50 }),
+          notificationsAPI.getUnreadCount(),
+        ])
+        if (cancelled) return
+        const notifs = notifsRes.data?.data || []
+        const count = countRes.data?.data?.count || 0
+        startTransition(() => {
+          setNotifications((prev) => {
+            const existingIds = new Set(prev.map((n) => n.id))
+            const newNotifs = notifs.filter((n) => !existingIds.has(n.id))
+            const merged = [...prev, ...newNotifs]
+              .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+            return merged.slice(0, 100)
+          })
+          setUnreadCount(count)
+        })
+      } catch (err) {
+        console.log('Erreur chargement notifications:', err.message)
+      }
+    }
+
+    loadNotifications()
+    return () => { cancelled = true }
+  }, [token])
+
+  const markAllRead = useCallback(async () => {
     setNotifications((prev) => prev.map((n) => ({ ...n, read: true })))
     setUnreadCount(0)
+    try {
+      await notificationsAPI.markAllRead()
+    } catch {}
   }, [])
 
   const clearNotifications = useCallback(() => {

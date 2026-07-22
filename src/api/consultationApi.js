@@ -17,3 +17,10 @@ export const examensAPI = {
   getById: (id) => api.get(`/api/consultations/examens/${id}`),
   updateResult: (id, data) => api.put(`/api/consultations/examens/${id}/result`, data),
 }
+
+export const notificationsAPI = {
+  getAll: (params) => api.get('/api/consultations/notifications', { params }),
+  getUnreadCount: () => api.get('/api/consultations/notifications/unread-count'),
+  markRead: (id) => api.put(`/api/consultations/notifications/${id}/read`),
+  markAllRead: () => api.put('/api/consultations/notifications/read-all'),
+}
