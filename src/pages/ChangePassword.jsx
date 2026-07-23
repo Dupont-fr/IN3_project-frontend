@@ -66,15 +66,15 @@ export default function ChangePassword() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-600 to-primary-900 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl p-8">
+        <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-800 p-8">
           <div className="text-center mb-6">
             <div className="w-16 h-16 bg-yellow-100 dark:bg-yellow-900/50 rounded-full flex items-center justify-center mx-auto mb-3">
               <KeyRound className="w-8 h-8 text-yellow-600 dark:text-yellow-400" />
             </div>
             <h1 className="text-xl font-bold text-gray-900 dark:text-white">{t('changePassword.title')}</h1>
-            <p className="text-sm text-gray-500 mt-1">
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
               {t('changePassword.subtitle', { name: user?.nameUser })}
             </p>
           </div>
@@ -87,7 +87,7 @@ export default function ChangePassword() {
           </div>
 
           {error && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">{error}</div>
+            <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 rounded-lg text-sm">{error}</div>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -102,7 +102,7 @@ export default function ChangePassword() {
                   placeholder={t('changePassword.current_placeholder')}
                   required
                 />
-                <button type="button" onClick={() => toggleShow('current')} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                <button type="button" onClick={() => toggleShow('current')} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
                   {show.current ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
@@ -119,7 +119,7 @@ export default function ChangePassword() {
                   placeholder={t('changePassword.new_placeholder')}
                   required
                 />
-                <button type="button" onClick={() => toggleShow('new')} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                <button type="button" onClick={() => toggleShow('new')} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
                   {show.new ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
@@ -136,7 +136,7 @@ export default function ChangePassword() {
                   </p>
                   <ul className="space-y-0.5">
                     {rules.map((rule, i) => (
-                      <li key={i} className={`flex items-center gap-1.5 text-xs ${checks[i] ? 'text-green-600' : 'text-gray-400'}`}>
+                      <li key={i} className={`flex items-center gap-1.5 text-xs ${checks[i] ? 'text-green-600 dark:text-green-400' : 'text-gray-400 dark:text-gray-500'}`}>
                         {checks[i] ? <CheckCircle className="w-3 h-3" /> : <XCircle className="w-3 h-3" />}
                         {t(rule.labelKey)}
                       </li>
@@ -157,12 +157,12 @@ export default function ChangePassword() {
                   placeholder={t('changePassword.confirm_placeholder')}
                   required
                 />
-                <button type="button" onClick={() => toggleShow('confirm')} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                <button type="button" onClick={() => toggleShow('confirm')} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
                   {show.confirm ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
               {confirmPassword.length > 0 && (
-                <p className={`mt-1 text-xs flex items-center gap-1 ${newPassword === confirmPassword ? 'text-green-600' : 'text-red-500'}`}>
+                <p className={`mt-1 text-xs flex items-center gap-1 ${newPassword === confirmPassword ? 'text-green-600 dark:text-green-400' : 'text-red-500 dark:text-red-400'}`}>
                   {newPassword === confirmPassword ? <CheckCircle className="w-3 h-3" /> : <XCircle className="w-3 h-3" />}
                   {newPassword === confirmPassword ? t('changePassword.match') : t('changePassword.no_match')}
                 </p>

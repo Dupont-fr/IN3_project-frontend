@@ -17,19 +17,11 @@ export default function ForgotPassword() {
     setError('')
     setLoading(true)
 
-    console.log('🔐 [FORGOT PASSWORD] Demande de réinitialisation pour:', email)
-
     try {
-      const res = await passwordResetAPI.request(email)
-      console.log(
-        '✅ [FORGOT PASSWORD] Réponse:',
-        res.data?.message || 'Succès',
-      )
+      await passwordResetAPI.request(email)
       setSent(true)
     } catch (err) {
-      const msg = err.response?.data?.message || t('forgotPassword.error')
-      console.error('❌ [FORGOT PASSWORD] Erreur:', msg)
-      setError(msg)
+      setError(err.response?.data?.message || t('forgotPassword.error'))
     } finally {
       setLoading(false)
     }
@@ -37,9 +29,9 @@ export default function ForgotPassword() {
 
   if (sent) {
     return (
-      <div className='min-h-screen bg-gradient-to-br from-primary-600 to-primary-900 flex items-center justify-center p-4'>
+      <div className='flex items-center justify-center p-4' style={{ minHeight: 'calc(100vh - 4rem)' }}>
         <div className='w-full max-w-md'>
-          <div className='bg-white dark:bg-gray-900 rounded-2xl shadow-2xl p-8 text-center'>
+          <div className='bg-white dark:bg-gray-900 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-800 p-8 text-center'>
             <div className='w-16 h-16 bg-green-100 dark:bg-green-900/50 rounded-full flex items-center justify-center mx-auto mb-4'>
               <CheckCircle className='w-8 h-8 text-green-600 dark:text-green-400' />
             </div>
@@ -51,7 +43,7 @@ export default function ForgotPassword() {
             </p>
             <button
               onClick={() => navigate('/login')}
-              className='inline-flex items-center gap-2 text-sm text-primary-600 hover:text-primary-700 font-medium'
+              className='inline-flex items-center gap-2 text-sm text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 font-medium'
             >
               <ArrowLeft className='w-4 h-4' />
               {t('forgotPassword.back_login')}
@@ -63,9 +55,9 @@ export default function ForgotPassword() {
   }
 
   return (
-    <div className='min-h-screen bg-gradient-to-br from-primary-600 to-primary-900 flex items-center justify-center p-4'>
+    <div className='flex items-center justify-center p-4' style={{ minHeight: 'calc(100vh - 4rem)' }}>
       <div className='w-full max-w-md'>
-        <div className='bg-white dark:bg-gray-900 rounded-2xl shadow-2xl p-8'>
+        <div className='bg-white dark:bg-gray-900 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-800 p-8'>
           <div className='text-center mb-6'>
             <img
               src='/Medilogo.jpg'
@@ -75,13 +67,13 @@ export default function ForgotPassword() {
             <h1 className='text-xl font-bold text-gray-900 dark:text-white'>
               {t('forgotPassword.title')}
             </h1>
-            <p className='text-sm text-gray-500 mt-1'>
+            <p className='text-sm text-gray-500 dark:text-gray-400 mt-1'>
               {t('forgotPassword.subtitle')}
             </p>
           </div>
 
           {error && (
-            <div className='mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm'>
+            <div className='mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 rounded-lg text-sm'>
               {error}
             </div>
           )}

@@ -37,20 +37,20 @@ export default function Login() {
   }
 
   return (
-    <div className='min-h-screen bg-gradient-to-br from-primary-600 to-primary-900 flex items-center justify-center p-4'>
+    <div className='flex items-center justify-center p-4' style={{ minHeight: 'calc(100vh - 4rem)' }}>
       <div className='w-full max-w-md'>
-        <div className='bg-white dark:bg-gray-900 rounded-2xl shadow-2xl p-8'>
+        <div className='bg-white dark:bg-gray-900 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-800 p-8'>
           <div className='text-center mb-8'>
             <img
               src='/Medilogo.jpg'
               alt='MediSys'
               className='h-14 w-auto mx-auto mb-2'
             />
-            <p className='text-sm text-gray-500 mt-1'>{t('login.subtitle')}</p>
+            <p className='text-sm text-gray-500 dark:text-gray-400 mt-1'>{t('login.subtitle')}</p>
           </div>
 
           {error && (
-            <div className='mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm'>
+            <div className='mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 rounded-lg text-sm'>
               {error}
             </div>
           )}
@@ -100,7 +100,7 @@ export default function Login() {
             <div className='text-right'>
               <Link
                 to='/forgot-password'
-                className='text-xs text-primary-600 hover:text-primary-700 font-medium'
+                className='text-xs text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 font-medium'
               >
                 {t('login.forgot')}
               </Link>

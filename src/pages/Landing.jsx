@@ -7,76 +7,39 @@ import {
   ClipboardList,
   ArrowRight,
 } from 'lucide-react'
-import LanguageSwitcher from '../components/LanguageSwitcher'
 
 const features = [
-  {
-    icon: Users,
-    key: 'users',
-  },
-  {
-    icon: Hospital,
-    key: 'patients',
-  },
-  {
-    icon: ClipboardList,
-    key: 'consultations',
-  },
-  {
-    icon: Shield,
-    key: 'security',
-  },
+  { icon: Users, key: 'users' },
+  { icon: Hospital, key: 'patients' },
+  { icon: ClipboardList, key: 'consultations' },
+  { icon: Shield, key: 'security' },
 ]
 
 export default function Landing() {
   const { t } = useTranslation()
 
   return (
-    <div className='min-h-screen bg-gradient-to-br from-primary-600 via-primary-700 to-primary-900'>
-      <div className='max-w-6xl mx-auto px-4 py-6'>
-        <nav className='flex items-center justify-between'>
-          <div className='flex items-center gap-2'>
-            <img
-              src='/Medilogo.jpg'
-              alt='MediSys'
-              className='h-20 w-auto rounded-xl'
-            />
-            <span className='text-xl font-bold text-white'>
-              {t('app.name')}
-            </span>
-          </div>
-          <div className='flex items-center gap-3'>
-            <LanguageSwitcher light />
-            <Link
-              to='/login'
-              className='px-5 py-2 bg-white text-primary-700 font-medium rounded-lg hover:bg-primary-50 transition-colors text-sm'
-            >
-              {t('nav.login')}
-            </Link>
-          </div>
-        </nav>
-      </div>
-
-      <div className='max-w-6xl mx-auto px-4 pt-20 pb-16 text-center'>
-        <div className='inline-flex items-center gap-2 px-4 py-1.5 bg-white/10 backdrop-blur rounded-full text-white/80 text-sm mb-8'>
+    <div>
+      <div className='max-w-6xl mx-auto px-4 pt-16 pb-20 text-center'>
+        <div className='inline-flex items-center gap-2 px-4 py-1.5 bg-primary-50 dark:bg-primary-900/30 rounded-full text-primary-600 dark:text-primary-400 text-sm mb-8 border border-primary-200 dark:border-primary-800'>
           <Hospital className='w-4 h-4' />
           {t('app.tagline')}
         </div>
 
-        <h1 className='text-4xl md:text-6xl font-bold text-white mb-6 leading-tight'>
+        <h1 className='text-4xl md:text-6xl font-bold text-gray-900 dark:text-white mb-6 leading-tight'>
           {t('app.subtitle')}
           <br />
-          <span className='text-primary-200'>{t('app.subtitle2')}</span>
+          <span className='text-primary-600 dark:text-primary-400'>{t('app.subtitle2')}</span>
         </h1>
 
-        <p className='text-lg text-primary-100 max-w-2xl mx-auto mb-10'>
+        <p className='text-lg text-gray-500 dark:text-gray-400 max-w-2xl mx-auto mb-10'>
           {t('app.description')}
         </p>
 
         <div className='flex items-center justify-center gap-4'>
           <Link
             to='/login'
-            className='inline-flex items-center gap-2 px-8 py-3 bg-white text-primary-700 font-semibold rounded-xl hover:bg-primary-50 transition-all shadow-lg shadow-black/20'
+            className='inline-flex items-center gap-2 px-8 py-3 bg-primary-600 text-white font-semibold rounded-xl hover:bg-primary-700 transition-all shadow-lg shadow-primary-600/20'
           >
             {t('app.cta')}
             <ArrowRight className='w-5 h-5' />
@@ -85,7 +48,7 @@ export default function Landing() {
       </div>
 
       <div className='max-w-6xl mx-auto px-4 py-20'>
-        <h2 className='text-2xl font-bold text-white text-center mb-12'>
+        <h2 className='text-2xl font-bold text-gray-900 dark:text-white text-center mb-12'>
           {t('features.title')}
         </h2>
         <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6'>
@@ -94,15 +57,15 @@ export default function Landing() {
             return (
               <div
                 key={f.key}
-                className='bg-white/10 backdrop-blur rounded-xl p-6 text-center'
+                className='bg-white dark:bg-gray-900 rounded-xl p-6 text-center border border-gray-200 dark:border-gray-800 shadow-sm'
               >
-                <div className='w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center mx-auto mb-4'>
-                  <Icon className='w-6 h-6 text-white' />
+                <div className='w-12 h-12 bg-primary-50 dark:bg-primary-900/30 rounded-lg flex items-center justify-center mx-auto mb-4'>
+                  <Icon className='w-6 h-6 text-primary-600 dark:text-primary-400' />
                 </div>
-                <h3 className='text-white font-semibold mb-2'>
+                <h3 className='text-gray-900 dark:text-white font-semibold mb-2'>
                   {t(`feature.${f.key}`)}
                 </h3>
-                <p className='text-primary-200 text-sm'>
+                <p className='text-gray-500 dark:text-gray-400 text-sm'>
                   {t(`feature.${f.key}_desc`)}
                 </p>
               </div>
@@ -111,8 +74,8 @@ export default function Landing() {
         </div>
       </div>
 
-      <div className='max-w-6xl mx-auto px-4 py-12 text-center border-t border-white/10'>
-        <p className='text-primary-200 text-sm'>{t('app.footer')}</p>
+      <div className='max-w-6xl mx-auto px-4 py-12 text-center border-t border-gray-200 dark:border-gray-800'>
+        <p className='text-gray-400 dark:text-gray-500 text-sm'>{t('app.footer')}</p>
       </div>
     </div>
   )

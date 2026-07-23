@@ -1,6 +1,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import ProtectedRoute from '../components/ProtectedRoute'
 import AppLayout from '../components/layout/AppLayout'
+import PublicLayout from '../components/layout/PublicLayout'
 import Landing from '../pages/Landing'
 import Login from '../pages/Login'
 import Dashboard from '../pages/Dashboard'
@@ -31,9 +32,11 @@ import PasswordResetRequests from '../pages/Admin/PasswordResetRequests'
 export default function AppRoutes() {
   return (
     <Routes>
-      <Route path="/" element={<Landing />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route element={<PublicLayout />}>
+        <Route path="/" element={<Landing />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+      </Route>
       <Route path="/change-password" element={
         <ProtectedRoute><ChangePassword /></ProtectedRoute>
       } />

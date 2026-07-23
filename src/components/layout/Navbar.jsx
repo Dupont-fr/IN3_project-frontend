@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '../../context/AuthContext'
 import { useNotifications } from '../../context/NotificationContext'
+import { useTheme } from '../../context/ThemeContext'
 import { useNavigate } from 'react-router-dom'
 import { ROLE_LABELS } from '../../utils/roleHelpers'
 import { Moon, Sun, Menu, Building2, Bell, BellRing, ArrowRightLeft, FileText, KeyRound } from 'lucide-react'
@@ -48,14 +49,10 @@ export default function Navbar({ onMenuClick }) {
   const { t } = useTranslation()
   const { user } = useAuth()
   const { notifications, unreadCount, markAllRead } = useNotifications()
+  const { dark, toggleTheme } = useTheme()
   const navigate = useNavigate()
-  const [dark, setDark] = useState(() => document.documentElement.classList.contains('dark'))
   const [showNotif, setShowNotif] = useState(false)
   const notifRef = useRef(null)
-
-  useEffect(() => {
-    document.documentElement.classList.toggle('dark', dark)
-  }, [dark])
 
   useEffect(() => {
     const handleClick = (e) => {
@@ -64,8 +61,6 @@ export default function Navbar({ onMenuClick }) {
     document.addEventListener('mousedown', handleClick)
     return () => document.removeEventListener('mousedown', handleClick)
   }, [])
-
-  const toggleTheme = () => setDark((prev) => !prev)
 
   const handleNotifClick = (n) => {
     const link = getNotifLink(n)
