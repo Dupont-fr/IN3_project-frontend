@@ -52,6 +52,7 @@ const navItems = [
     key: 'pending_examens',
     icon: FlaskConical,
     permission: 'canViewConsultations',
+    excludeRoles: ['ACCUEIL'],
   },
   {
     to: '/statistics',
@@ -96,6 +97,8 @@ export default function Sidebar({ open, onClose }) {
         <nav className='p-4 space-y-1'>
           {navItems.map((item) => {
             if (item.permission && !hasPermission(user, item.permission))
+              return null
+            if (item.excludeRoles && item.excludeRoles.includes(user?.roleUser))
               return null
             const Icon = item.icon
             return (
