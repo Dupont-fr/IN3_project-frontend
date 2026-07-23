@@ -4,7 +4,7 @@ import { patientsAPI } from '../../api/patientApi'
 import { useAuth } from '../../context/AuthContext'
 import { hasPermission } from '../../utils/roleHelpers'
 import { useTranslation } from 'react-i18next'
-import { Plus, Search, Eye, PenSquare } from 'lucide-react'
+import { Plus, Search, Eye, PenSquare, User, Phone } from 'lucide-react'
 import Loader from '../../components/Loader'
 
 export default function PatientList() {
@@ -61,13 +61,13 @@ export default function PatientList() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{t('patientList.title')}</h1>
           <p className="text-sm text-gray-500 mt-1">{t('patientList.count', { count: patients.length })}</p>
         </div>
         {canEdit && (
-          <Link to="/patients/create" className="flex items-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white text-sm font-medium rounded-lg transition-colors">
+          <Link to="/patients/create" className="flex items-center justify-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white text-sm font-medium rounded-lg transition-colors">
             <Plus className="w-4 h-4" /> {t('patientList.new')}
           </Link>
         )}
@@ -88,58 +88,100 @@ export default function PatientList() {
         />
       </div>
 
-      <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900/50">
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase">{t('patientList.col_patient')}</th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase">{t('patientList.col_code')}</th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase">{t('patientList.col_phone')}</th>
-                <th className="text-right px-6 py-3 text-xs font-medium text-gray-500 uppercase">{t('patientList.col_actions')}</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
-              {patients.length === 0 ? (
-                <tr>
-                  <td colSpan={4} className="px-6 py-12 text-center text-gray-500">{t('patientList.no_patients')}</td>
-                </tr>
-              ) : (
-                patients.map((patient) => {
-                  const estActif = patient.actif !== false
-                  return (
-                  <tr key={patient.id} className={`hover:bg-gray-50 dark:hover:bg-gray-800/50 ${!estActif ? 'opacity-50' : ''}`}>
-                    <td className="px-6 py-4">
-                      <div className="font-medium text-gray-900 dark:text-white flex items-center gap-2">
-                        {fullName(patient)}
-                        {!estActif && <span className="text-xs font-semibold text-red-600 dark:text-red-400">{t('patientList.inactive')}</span>}
-                      </div>
-                      <div className="text-sm text-gray-500">
-                        {formatDate(patient.date_naissance_patient)} ({calcAge(patient.date_naissance_patient)} ans) — {genreLabel(patient.genre_patient)}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 text-sm font-mono text-primary-600 font-medium">{patient.code_patient || '-'}</td>
-                    <td className="px-6 py-4 text-sm text-gray-500">{patient.telephone_patient || '-'}</td>
-                    <td className="px-6 py-4 text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        <Link to={`/patients/${patient.id}`} className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors">
-                          <Eye className="w-3.5 h-3.5" /> {t('view')}
-                        </Link>
-                        {canEdit && user?.hospitalUser && patient.hopital === user.hospitalUser && (
-                          <Link to={`/patients/${patient.id}/edit`} className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-colors">
-                            <PenSquare className="w-3.5 h-3.5" /> {t('edit')}
-                          </Link>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                )
-              })
-            )}
-            </tbody>
-          </table>
+      {patients.length === 0 ? (
+        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-12 text-center text-gray-500">
+          {t('patientList.no_patients')}
         </div>
-      </div>
+      ) : (
+        <>
+          <div className="hidden sm:block bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900/50">
+                    <th className="text-left px-4 sm:px-6 py-3 text-xs font-medium text-gray-500 uppercase">{t('patientList.col_patient')}</th>
+                    <th className="text-left px-4 sm:px-6 py-3 text-xs font-medium text-gray-500 uppercase">{t('patientList.col_code')}</th>
+                    <th className="text-left px-4 sm:px-6 py-3 text-xs font-medium text-gray-500 uppercase">{t('patientList.col_phone')}</th>
+                    <th className="text-right px-4 sm:px-6 py-3 text-xs font-medium text-gray-500 uppercase">{t('patientList.col_actions')}</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
+                  {patients.map((patient) => {
+                    const estActif = patient.actif !== false
+                    return (
+                    <tr key={patient.id} className={`hover:bg-gray-50 dark:hover:bg-gray-800/50 ${!estActif ? 'opacity-50' : ''}`}>
+                      <td className="px-4 sm:px-6 py-4">
+                        <div className="font-medium text-gray-900 dark:text-white flex items-center gap-2">
+                          {fullName(patient)}
+                          {!estActif && <span className="text-xs font-semibold text-red-600 dark:text-red-400">{t('patientList.inactive')}</span>}
+                        </div>
+                        <div className="text-sm text-gray-500">
+                          {formatDate(patient.date_naissance_patient)} ({calcAge(patient.date_naissance_patient)} ans) — {genreLabel(patient.genre_patient)}
+                        </div>
+                      </td>
+                      <td className="px-4 sm:px-6 py-4 text-sm font-mono text-primary-600 font-medium">{patient.code_patient || '-'}</td>
+                      <td className="px-4 sm:px-6 py-4 text-sm text-gray-500">{patient.telephone_patient || '-'}</td>
+                      <td className="px-4 sm:px-6 py-4 text-right">
+                        <div className="flex items-center justify-end gap-2">
+                          <Link to={`/patients/${patient.id}`} className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors">
+                            <Eye className="w-3.5 h-3.5" /> {t('view')}
+                          </Link>
+                          {canEdit && user?.hospitalUser && patient.hopital === user.hospitalUser && (
+                            <Link to={`/patients/${patient.id}/edit`} className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-colors">
+                              <PenSquare className="w-3.5 h-3.5" /> {t('edit')}
+                            </Link>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  )
+                })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div className="sm:hidden space-y-3">
+            {patients.map((patient) => {
+              const estActif = patient.actif !== false
+              return (
+                <div key={patient.id} className={`bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-4 ${!estActif ? 'opacity-50' : ''}`}>
+                  <div className="flex items-start justify-between mb-2">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <div className="w-9 h-9 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center shrink-0">
+                        <User className="w-4 h-4 text-primary-600 dark:text-primary-400" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="font-medium text-gray-900 dark:text-white truncate">{fullName(patient)}</p>
+                        <p className="text-xs text-gray-500">{formatDate(patient.date_naissance_patient)} ({calcAge(patient.date_naissance_patient)} ans) — {genreLabel(patient.genre_patient)}</p>
+                      </div>
+                    </div>
+                    {!estActif && <span className="text-xs font-semibold text-red-600 dark:text-red-400 shrink-0">{t('patientList.inactive')}</span>}
+                  </div>
+                  <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-100 dark:border-gray-800">
+                    <div className="flex items-center gap-3 text-xs text-gray-500">
+                      <span className="font-mono text-primary-600 font-medium">{patient.code_patient || '-'}</span>
+                      {patient.telephone_patient && (
+                        <span className="flex items-center gap-1"><Phone className="w-3 h-3" />{patient.telephone_patient}</span>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Link to={`/patients/${patient.id}`} className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors">
+                        <Eye className="w-3.5 h-3.5" /> {t('view')}
+                      </Link>
+                      {canEdit && user?.hospitalUser && patient.hopital === user.hospitalUser && (
+                        <Link to={`/patients/${patient.id}/edit`} className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-colors">
+                          <PenSquare className="w-3.5 h-3.5" /> {t('edit')}
+                        </Link>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </>
+      )}
     </div>
   )
 }

@@ -165,7 +165,7 @@ export default function EditPatient() {
           <input name="adresseRue" value={form.adresseRue} onChange={handleChange} disabled={!canEdit}
             placeholder={t('editPatient.field_street_placeholder')}
             className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 outline-none disabled:opacity-60 mb-3" />
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <input name="adresseVille" value={form.adresseVille} onChange={handleChange} disabled={!canEdit}
               placeholder={t('editPatient.field_city_placeholder')}
               className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 outline-none disabled:opacity-60" />

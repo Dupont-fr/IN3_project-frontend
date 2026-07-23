@@ -486,14 +486,14 @@ export default function ConsultationDetail() {
 
   return (
     <div className='max-w-4xl mx-auto'>
-      <div className='flex items-center justify-between mb-4'>
+      <div className='flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4'>
         <button
           onClick={() => navigate('/consultations')}
           className='flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
         >
           <ArrowLeft className='w-4 h-4' /> {t('consultationDetail.back')}
         </button>
-        <div className='flex gap-2'>
+        <div className='flex flex-wrap gap-2'>
           <button
             onClick={handleDownloadPDF}
             disabled={pdfGenerating}
@@ -925,7 +925,7 @@ export default function ConsultationDetail() {
         )}
 
         <div className='bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5'>
-          <div className='flex items-center justify-between text-xs text-gray-400'>
+          <div className='flex flex-col sm:flex-row sm:items-center justify-between gap-1 sm:gap-3 text-xs text-gray-400'>
             <span>
               {t('consultationDetail.created_at')}{' '}
               {consultation.createdAt
