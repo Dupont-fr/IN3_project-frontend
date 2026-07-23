@@ -1,6 +1,6 @@
 import { Outlet, Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { useTheme } from '../context/ThemeContext'
+import { useTheme } from '../../context/ThemeContext'
 import { Moon, Sun } from 'lucide-react'
 import LanguageSwitcher from './LanguageSwitcher'
 
