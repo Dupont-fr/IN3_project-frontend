@@ -83,34 +83,68 @@ function fmt(d) {
   })
 }
 
-function addSection(doc, title, y) {
-  if (y > 250) {
+const PDF_MARGIN = 14
+const PDF_PAGE_W = 210
+const PDF_CONTENT_W = PDF_PAGE_W - 2 * PDF_MARGIN
+
+function ensurePage(doc, y, needed) {
+  if (y + needed > 277) {
     doc.addPage()
-    y = 20
+    return 20
   }
+  return y
+}
+
+function addSection(doc, title, y) {
+  y = ensurePage(doc, y, 14)
+  doc.setFillColor(240, 240, 245)
+  doc.rect(PDF_MARGIN, y - 4, PDF_CONTENT_W, 8, 'F')
   doc.setFont('helvetica', 'bold')
-  doc.setFontSize(12)
-  doc.text(title, 14, y)
-  doc.setDrawColor(200)
-  doc.line(14, y + 1, 196, y + 1)
-  return y + 10
+  doc.setFontSize(11)
+  doc.setTextColor(40, 40, 40)
+  doc.text(title, PDF_MARGIN + 2, y + 1)
+  doc.setDrawColor(180, 180, 200)
+  doc.setLineWidth(0.3)
+  doc.line(PDF_MARGIN, y + 5, PDF_PAGE_W - PDF_MARGIN, y + 5)
+  return y + 12
 }
 
 function addField(doc, label, value, y) {
-  if (y > 270) {
-    doc.addPage()
-    y = 20
+  const text = String(value || '-')
+  if (label) {
+    y = ensurePage(doc, y, 12)
+    doc.setFont('helvetica', 'bold')
+    doc.setFontSize(8)
+    doc.setTextColor(110, 110, 110)
+    doc.text(label, PDF_MARGIN + 2, y)
+    y += 4
+  } else {
+    y = ensurePage(doc, y, 6)
   }
-  doc.setFont('helvetica', 'bold')
-  doc.setFontSize(9)
-  doc.setTextColor(100)
-  doc.text(label, 14, y)
   doc.setFont('helvetica', 'normal')
-  doc.setFontSize(10)
-  doc.setTextColor(0)
-  const lines = doc.splitTextToSize(String(value || '-'), 180)
-  doc.text(lines, 14, y + 5)
-  return y + 8 + lines.length * 4.5
+  doc.setFontSize(9.5)
+  doc.setTextColor(30, 30, 30)
+  const lines = doc.splitTextToSize(text, PDF_CONTENT_W - 4)
+  for (const line of lines) {
+    y = ensurePage(doc, y, 5)
+    doc.text(line, PDF_MARGIN + 2, y)
+    y += 4.2
+  }
+  return y + 2
+}
+
+function addFieldValue(doc, label, value, y) {
+  y = ensurePage(doc, y, 14)
+  doc.setFont('helvetica', 'bold')
+  doc.setFontSize(8)
+  doc.setTextColor(110, 110, 110)
+  doc.text(label, PDF_MARGIN + 2, y)
+  doc.setFont('helvetica', 'normal')
+  doc.setFontSize(9.5)
+  doc.setTextColor(30, 30, 30)
+  const lines = doc.splitTextToSize(String(value || '-'), PDF_CONTENT_W - 4)
+  doc.text(lines, PDF_MARGIN + 2, y + 4.5)
+  return y + 7 + lines.length * 4.2
 }
 
 const Section = ({ title, icon: Icon, children, className = '' }) => (
@@ -133,47 +167,71 @@ const Field = ({ label, value, className = '' }) => (
   </div>
 )
 
-function generatePDF(c, p, tFn) {
+function generatePDF(c, p, examens, tFn) {
   const doc = new jsPDF('p', 'mm', 'a4')
 
-  doc.setFont('helvetica', 'bold')
-  doc.setFontSize(18)
-  doc.setTextColor(0)
-  doc.text(tFn('consultationDetail.pdf_title'), 14, 20)
-  doc.setFont('helvetica', 'normal')
-  doc.setFontSize(10)
-  doc.setTextColor(100)
-  doc.text(`${tFn('consultationDetail.pdf_date')} ${fmt(c.date)}`, 14, 28)
+  const statusLabels = {
+    en_attente: tFn('consultationDetail.status_pending'),
+    complete: tFn('consultationDetail.status_completed'),
+    annulee: tFn('consultationDetail.status_cancelled'),
+    transferee: tFn('consultationDetail.status_transferred'),
+  }
+  const statusColors = {
+    en_attente: [245, 158, 11],
+    complete: [16, 185, 129],
+    annulee: [239, 68, 68],
+    transferee: [59, 130, 246],
+  }
 
-  doc.setDrawColor(200)
-  doc.line(14, 32, 196, 32)
-  let y = 40
+  let y = 18
+
+  if (c.doctorHospital) {
+    doc.setFont('helvetica', 'bold')
+    doc.setFontSize(9)
+    doc.setTextColor(130, 130, 130)
+    doc.text(c.doctorHospital.toUpperCase(), PDF_PAGE_W / 2, y, { align: 'center' })
+    y += 7
+  }
+
+  doc.setFont('helvetica', 'bold')
+  doc.setFontSize(20)
+  doc.setTextColor(25, 25, 112)
+  doc.text(tFn('consultationDetail.pdf_title'), PDF_PAGE_W / 2, y, { align: 'center' })
+  y += 10
+
+  doc.setDrawColor(25, 25, 112)
+  doc.setLineWidth(0.8)
+  doc.line(PDF_MARGIN, y, PDF_PAGE_W - PDF_MARGIN, y)
+  y += 8
+
+  doc.setFont('helvetica', 'normal')
+  doc.setFontSize(9)
+  doc.setTextColor(80, 80, 80)
+  doc.text(`ID: ${String(c.id).slice(0, 8).toUpperCase()}`, PDF_MARGIN, y)
+  doc.text(`${tFn('consultationDetail.pdf_date')} ${fmt(c.date)}`, PDF_PAGE_W / 2, y, { align: 'center' })
+
+  const sLabel = statusLabels[c.statut] || statusLabels.en_attente
+  const sColor = statusColors[c.statut] || statusColors.en_attente
+  const sWidth = doc.getTextWidth(sLabel) + 6
+  doc.setFillColor(...sColor)
+  doc.roundedRect(PDF_PAGE_W - PDF_MARGIN - sWidth, y - 4, sWidth, 6, 1.5, 1.5, 'F')
+  doc.setFont('helvetica', 'bold')
+  doc.setFontSize(8)
+  doc.setTextColor(255, 255, 255)
+  doc.text(sLabel, PDF_PAGE_W - PDF_MARGIN - sWidth / 2, y, { align: 'center' })
+  y += 10
+
+  doc.setDrawColor(200, 200, 210)
+  doc.setLineWidth(0.3)
+  doc.line(PDF_MARGIN, y, PDF_PAGE_W - PDF_MARGIN, y)
+  y += 10
 
   y = addSection(doc, tFn('consultationDetail.pdf_section_patient'), y)
-  y = addField(
-    doc,
-    tFn('consultationDetail.pdf_field_fullname'),
-    c.patientName,
-    y,
-  )
-  y = addField(
-    doc,
-    tFn('consultationDetail.pdf_field_code'),
-    p?.code_patient,
-    y,
-  )
-  y = addField(
-    doc,
-    tFn('consultationDetail.pdf_field_gender'),
-    p?.genre_patient,
-    y,
-  )
-  y = addField(
-    doc,
-    tFn('consultationDetail.pdf_field_dob'),
-    p?.date_naissance_patient ? fmt(p.date_naissance_patient) : '-',
-    y,
-  )
+  y = addFieldValue(doc, tFn('consultationDetail.pdf_field_fullname'), c.patientName, y)
+  y = addFieldValue(doc, tFn('consultationDetail.pdf_field_code'), p?.code_patient, y)
+  y = addFieldValue(doc, tFn('consultationDetail.pdf_field_gender'), p?.genre_patient, y)
+  y = addFieldValue(doc, tFn('consultationDetail.pdf_field_dob'), p?.date_naissance_patient ? fmt(p.date_naissance_patient) : '-', y)
+  y += 4
 
   y = addSection(doc, tFn('consultationDetail.pdf_section_doctors'), y)
   const grouped = {}
@@ -184,102 +242,124 @@ function generatePDF(c, p, tFn) {
     }
     grouped[key].interventions.push(inv)
   }
-  for (const [, g] of Object.entries(grouped)) {
-    const label = g.interventions[0].action === 'creation'
-      ? tFn('consultationDetail.action_creation')
-      : g.interventions[0].action === 'prise_en_charge'
-        ? tFn('consultationDetail.action_prise_en_charge')
-        : tFn('consultationDetail.action_modification')
-    y = addField(
-      doc,
-      label,
-      g.doctorName
+  const groupEntries = Object.entries(grouped)
+  if (groupEntries.length === 0) {
+    y = addField(doc, '', tFn('consultationDetail.no_doctors'), y)
+  } else {
+    for (const [, g] of groupEntries) {
+      const label = g.interventions[0].action === 'creation'
+        ? tFn('consultationDetail.action_creation')
+        : g.interventions[0].action === 'prise_en_charge'
+          ? tFn('consultationDetail.action_prise_en_charge')
+          : tFn('consultationDetail.action_modification')
+      const doctorInfo = g.doctorName
         ? `${g.doctorName}${g.doctorSpecialty ? ' — ' + g.doctorSpecialty : ''}${g.doctorHospital ? ' (' + g.doctorHospital + ')' : ''}`
-        : 'Accueil',
-      y,
-    )
-    for (const inv of g.interventions) {
-      if (inv.changes && Object.keys(inv.changes).length > 0) {
-        for (const [field, vals] of Object.entries(inv.changes)) {
-          const fieldLabel = fieldLabels[field] || field
-          let changeText = ''
-          if (vals && typeof vals === 'object' && 'old' in vals) {
-            changeText = `${vals.old || '(vide)'} → ${vals.new || '(vide)'}`
-          } else {
-            changeText = String(vals ?? '(vide)')
+        : 'Accueil'
+      y = addFieldValue(doc, label, doctorInfo, y)
+      for (const inv of g.interventions) {
+        if (inv.changes && Object.keys(inv.changes).length > 0) {
+          for (const [field, vals] of Object.entries(inv.changes)) {
+            const fieldLabel = fieldLabels[field] || field
+            let changeText = ''
+            if (vals && typeof vals === 'object' && 'old' in vals) {
+              changeText = `${vals.old || '(vide)'} → ${vals.new || '(vide)'}`
+            } else {
+              changeText = String(vals ?? '(vide)')
+            }
+            y = addField(doc, `    ${fieldLabel}`, changeText, y)
           }
-          y = addField(doc, `  ${fieldLabel}`, changeText, y)
         }
       }
     }
   }
+  y += 4
 
   y = addSection(doc, tFn('consultationDetail.pdf_section_vitals'), y)
-  y = addField(doc, tFn('consultationDetail.field_weight'), c.poids, y)
-  y = addField(doc, tFn('consultationDetail.field_height'), c.taille, y)
-  y = addField(
-    doc,
-    tFn('consultationDetail.field_temperature'),
-    c.temperature,
-    y,
-  )
-  y = addField(
-    doc,
-    tFn('consultationDetail.field_blood_pressure'),
-    c.tension,
-    y,
-  )
+  y = addFieldValue(doc, `${tFn('consultationDetail.field_weight')} (kg)`, c.poids, y)
+  y = addFieldValue(doc, `${tFn('consultationDetail.field_height')} (cm)`, c.taille, y)
+  y = addFieldValue(doc, `${tFn('consultationDetail.field_temperature')} (°C)`, c.temperature, y)
+  y = addFieldValue(doc, `${tFn('consultationDetail.field_blood_pressure')} (mmHg)`, c.tension, y)
+  y += 4
 
   if (c.contactUrgenceNom || c.contactUrgenceTelephone) {
-    y = addSection(doc, 'Contact urgence', y)
-    y = addField(doc, 'Nom', c.contactUrgenceNom, y)
-    y = addField(doc, 'Téléphone', c.contactUrgenceTelephone, y)
+    y = addSection(doc, tFn('consultationDetail.section_contact'), y)
+    y = addFieldValue(doc, tFn('consultationDetail.field_urgence_nom'), c.contactUrgenceNom, y)
+    y = addFieldValue(doc, tFn('consultationDetail.field_urgence_telephone'), c.contactUrgenceTelephone, y)
+    y += 4
   }
+
+  y = addSection(doc, tFn('consultationDetail.pdf_section_examens'), y)
+  if (examens && examens.length > 0) {
+    for (const ex of examens) {
+      y = ensurePage(doc, y, 30)
+      y = addFieldValue(doc, tFn('consultationDetail.pdf_field_examen_type'), ex.type, y)
+      if (ex.description) y = addField(doc, tFn('consultationDetail.pdf_field_examen_description'), ex.description, y)
+      const exStatus = ex.statut === 'realise' ? `✓ ${tFn('consultationDetail.examen_done')}` : `○ ${tFn('consultationDetail.examen_pending')}`
+      y = addFieldValue(doc, tFn('consultationDetail.pdf_field_examen_status'), exStatus, y)
+      if (ex.hopitalDestination) y = addFieldValue(doc, tFn('consultationDetail.pdf_field_examen_hospital'), ex.hopitalDestination, y)
+      if (ex.statut === 'realise' && ex.resultats) y = addFieldValue(doc, tFn('consultationDetail.examen_results'), ex.resultats, y)
+      y += 2
+      if (examens.indexOf(ex) < examens.length - 1) {
+        doc.setDrawColor(220, 220, 225)
+        doc.setLineWidth(0.2)
+        doc.line(PDF_MARGIN + 4, y, PDF_PAGE_W - PDF_MARGIN - 4, y)
+        y += 4
+      }
+    }
+  } else {
+    y = addField(doc, '', tFn('consultationDetail.no_examens'), y)
+  }
+  y += 4
 
   y = addSection(doc, tFn('consultationDetail.pdf_section_motif'), y)
   y = addField(doc, '', c.motifConsultation, y)
+  y += 4
 
   y = addSection(doc, tFn('consultationDetail.pdf_section_observations'), y)
   y = addField(doc, '', c.observations, y)
+  y += 4
 
   y = addSection(doc, tFn('consultationDetail.pdf_section_conclusion'), y)
   y = addField(doc, '', c.conclusion, y)
+  y += 4
 
   y = addSection(doc, tFn('consultationDetail.pdf_section_decision'), y)
   y = addField(doc, '', c.decision, y)
+  y += 4
 
   y = addSection(doc, tFn('consultationDetail.pdf_section_prescription'), y)
   y = addField(doc, '', c.prescription, y)
+  y += 4
 
   if (c.transfertDepuis || c.transfertVers) {
-    y = addSection(doc, 'Transfert', y)
-    if (c.transfertDepuis) y = addField(doc, 'Depuis', c.transfertDepuis, y)
-    if (c.transfertVers) y = addField(doc, 'Vers', c.transfertVers, y)
+    y = addSection(doc, tFn('consultationDetail.pdf_section_transfer'), y)
+    if (c.transfertDepuis) y = addFieldValue(doc, tFn('consultationDetail.pdf_field_transfer_from'), c.transfertDepuis, y)
+    if (c.transfertVers) y = addFieldValue(doc, tFn('consultationDetail.pdf_field_transfer_to'), c.transfertVers, y)
   }
 
-  y = addField(doc, '', '', y + 5)
-  doc.setDrawColor(200)
-  doc.line(14, y, 196, y)
-  y += 5
-  doc.setFont('helvetica', 'normal')
-  doc.setFontSize(8)
-  doc.setTextColor(150)
-  doc.text(
-    `${tFn('consultationDetail.pdf_created_at')} ${c.createdAt ? new Date(c.createdAt).toLocaleString('fr-FR') : '-'}`,
-    14,
-    y,
-  )
-  if (c.doctorHospital) {
-    doc.text(c.doctorHospital, 105, y, { align: 'center' })
+  const addFooter = (pageNum) => {
+    const footerY = 285
+    doc.setDrawColor(200, 200, 210)
+    doc.setLineWidth(0.3)
+    doc.line(PDF_MARGIN, footerY, PDF_PAGE_W - PDF_MARGIN, footerY)
+    doc.setFont('helvetica', 'normal')
+    doc.setFontSize(7)
+    doc.setTextColor(140, 140, 140)
+    const created = c.createdAt ? new Date(c.createdAt).toLocaleString('fr-FR') : '-'
+    doc.text(`${tFn('consultationDetail.pdf_created_at')} ${created}`, PDF_MARGIN, footerY + 4)
+    if (c.doctorHospital) doc.text(c.doctorHospital, PDF_PAGE_W / 2, footerY + 4, { align: 'center' })
+    const updated = c.updatedAt ? new Date(c.updatedAt).toLocaleString('fr-FR') : '-'
+    doc.text(`${tFn('consultationDetail.pdf_updated_at')} ${updated}`, PDF_PAGE_W - PDF_MARGIN, footerY + 4, { align: 'right' })
+    doc.text(`${pageNum}`, PDF_PAGE_W / 2, footerY + 8, { align: 'center' })
   }
-  doc.text(
-    `${tFn('consultationDetail.pdf_updated_at')} ${c.updatedAt ? new Date(c.updatedAt).toLocaleString('fr-FR') : '-'}`,
-    196,
-    y,
-    { align: 'right' },
-  )
 
-  doc.save(`consultation-${c.id}.pdf`)
+  const numPages = doc.internal.getNumberOfPages()
+  for (let i = 1; i <= numPages; i++) {
+    doc.setPage(i)
+    addFooter(i)
+  }
+
+  doc.save(`consultation-${String(c.id).slice(0, 8)}.pdf`)
 }
 
 export default function ConsultationDetail() {
@@ -353,7 +433,7 @@ export default function ConsultationDetail() {
   const handleDownloadPDF = async () => {
     setPdfGenerating(true)
     try {
-      generatePDF(consultation, patient, t)
+      generatePDF(consultation, patient, examens, t)
     } catch (err) {
       console.error('PDF generation error:', err)
     } finally {
